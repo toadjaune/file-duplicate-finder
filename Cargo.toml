@@ -1,0 +1,7 @@
+[package]
+name = "duplicate-finder"
+version = "0.1.0"
+authors = ["Arnaud Venturi <arnaud.venturi@rez-gif.supelec.fr>"]
+edition = "2018"
+
+[dependencies]
