@@ -11,7 +11,7 @@ pub fn run(paths: Vec<&str>) -> Result<(), Box <dyn Error>> {
     for path in paths {
         scan_dir(PathBuf::from(path), &mut filenames).unwrap();
     }
-    let filenames = filenames.without_single_entries();
+    filenames.remove_single_entries();
     filenames.text_output();
 
     Ok(())
@@ -41,22 +41,14 @@ impl FilenameDuplicates {
         }
     }
 
-    // fn remove_single_entries(&mut self) {
-    //     self.map = self.map.into_iter()
-    //         .filter( |entry|
-    //             // NB : len() is constant-time
-    //             entry.1.len() > 1
-    //         ).collect();
-    // }
+    fn remove_single_entries(&mut self) {
+        let old_map = std::mem::replace(&mut self.map, HashMap::new());
 
-    fn without_single_entries(self) -> FilenameDuplicates {
-        FilenameDuplicates {
-            map: self.map.into_iter()
-                .filter( |entry|
-                    // NB : len() is constant-time
-                    entry.1.len() > 1
-                ).collect()
-        }
+        self.map = old_map.into_iter()
+            .filter( |entry|
+                // NB : len() is constant-time
+                entry.1.len() > 1
+            ).collect();
     }
 
 }
