@@ -11,8 +11,8 @@ fn main() -> Result<(), Box <dyn Error>> {
 
     scan_dir(PathBuf::from("./"), &mut filenames).unwrap();
     let filenames = remove_single_entries(filenames);
+    text_output(&filenames);
 
-    println!("{:?}", filenames);
     Ok(())
 }
 
@@ -53,3 +53,18 @@ fn remove_single_entries(map: HashMap<OsString, Vec<OsString>>) -> HashMap<OsStr
             entry.1.len() > 1
         ).collect()
 }
+
+fn text_output(map: &HashMap<OsString, Vec<OsString>>) {
+    for (filename,filepaths) in map {
+
+        // TODO : Find a way to directly handle OsString without conversion
+        // TODO : Also, avoid cloning the string
+        println!("Duplicate files named {} :", filename.clone().into_string().unwrap());
+        for filepath in filepaths {
+            println!("    {}", filepath.clone().into_string().unwrap());
+        }
+    }
+}
+
+
+
