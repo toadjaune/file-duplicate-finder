@@ -6,16 +6,13 @@ use std::ffi::{OsString, OsStr};
 fn main() {
 
     let mut filenames = HashMap::new();
-    let mut file_paths = vec![OsString::from("/a/toto.txt"), OsString::from("/b/toto.txt")];
 
-    filenames.insert(OsString::from("toto.txt"), file_paths);
-
-    scan_dir("/tmp", &mut filenames);
+    scan_dir(OsStr::new("./"), &mut filenames);
 }
 
-fn scan_dir(path: &str, map: &mut HashMap<OsString, std::vec::Vec<OsString>>) -> () {
+fn scan_dir(path: &OsStr, map: &mut HashMap<OsString, std::vec::Vec<OsString>>) -> () {
 
-    let dir_listing = fs::read_dir("./").unwrap();
+    let dir_listing = fs::read_dir(path).unwrap();
 
     for file in dir_listing {
         // println!("Name: {}", path.unwrap().path().display());
@@ -29,17 +26,10 @@ fn scan_dir(path: &str, map: &mut HashMap<OsString, std::vec::Vec<OsString>>) ->
 
 
         } else {
-
-            let a = file.path();
-            let b = a.file_name();
-            let c = b.unwrap();
-            let file_copy = c.clone();
-
-            // let file_copy = file.path().file_name().unwrap().clone();
-            // println!("{:?}", file.file_type().unwrap().is_dir());
-            // println!("{:?}", file_copy);
-            map.insert(OsString::from(file_copy), vec![OsString::from("a")]);
-
+            let files = map.entry(OsString::from(file.path().file_name().unwrap()))
+                .or_insert(Vec::new());
+            // NB : Canonicalize resolves all symlinks in the path
+            files.push(OsString::from(file.path().canonicalize().unwrap()));
         }
     }
     println!("{:?}", map);
