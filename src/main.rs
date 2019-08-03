@@ -1,39 +1,55 @@
 use std::fs;
 use std::collections::HashMap;
-use std::ffi::{OsString, OsStr};
+use std::ffi::OsString;
 use std::path::PathBuf;
+use std::error::Error;
 
 
-fn main() {
+fn main() -> Result<(), Box <dyn Error>> {
 
     let mut filenames = HashMap::new();
 
-    scan_dir(PathBuf::from("./"), &mut filenames);
+    scan_dir(PathBuf::from("./"), &mut filenames).unwrap();
+    let filenames = remove_single_entries(filenames);
+
+    println!("{:?}", filenames);
+    Ok(())
 }
 
-fn scan_dir(path: PathBuf, map: &mut HashMap<OsString, std::vec::Vec<OsString>>) -> () {
 
-    let dir_listing = fs::read_dir(path).unwrap();
+fn scan_dir(path: PathBuf, map: &mut HashMap<OsString, Vec<OsString>>) -> Result<(), Box<dyn Error>> {
+
+    let dir_listing = fs::read_dir(path)?;
 
     for file in dir_listing {
         // println!("Name: {}", path.unwrap().path().display());
 
-        let file = file.unwrap();
+        let file = file?;
 
         // TODO : can't we instead generate an enum and match on it ?
         // TODO : currently, we consider symlinks as normal files (even if symlinked towards a
         // directory)
-        if file.file_type().unwrap().is_dir() {
+        if file.file_type()?.is_dir() {
 
             scan_dir(file.path(), map);
 
         } else {
-            let files = map.entry(OsString::from(file.path().file_name().unwrap()))
-                .or_insert(Vec::new());
+            let files = map.entry(
+                    OsString::from(
+                        file.path().file_name().unwrap()
+                    )
+                ).or_insert(Vec::new());
             // NB : Canonicalize resolves all symlinks in the path
-            files.push(OsString::from(file.path().canonicalize().unwrap()));
+            files.push(OsString::from(file.path().canonicalize()?));
         }
     }
-    println!("{:?}", map);
+    Ok(())
+}
 
+fn remove_single_entries(map: HashMap<OsString, Vec<OsString>>) -> HashMap<OsString, Vec<OsString>> {
+    map.into_iter()
+        .filter( |entry|
+            // NB : len() is constant-time
+            entry.1.len() > 1
+        ).collect()
 }
