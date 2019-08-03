@@ -1,16 +1,17 @@
 use std::fs;
 use std::collections::HashMap;
 use std::ffi::{OsString, OsStr};
+use std::path::PathBuf;
 
 
 fn main() {
 
     let mut filenames = HashMap::new();
 
-    scan_dir(OsStr::new("./"), &mut filenames);
+    scan_dir(PathBuf::from("./"), &mut filenames);
 }
 
-fn scan_dir(path: &OsStr, map: &mut HashMap<OsString, std::vec::Vec<OsString>>) -> () {
+fn scan_dir(path: PathBuf, map: &mut HashMap<OsString, std::vec::Vec<OsString>>) -> () {
 
     let dir_listing = fs::read_dir(path).unwrap();
 
@@ -24,6 +25,7 @@ fn scan_dir(path: &OsStr, map: &mut HashMap<OsString, std::vec::Vec<OsString>>) 
         // directory)
         if file.file_type().unwrap().is_dir() {
 
+            scan_dir(file.path(), map);
 
         } else {
             let files = map.entry(OsString::from(file.path().file_name().unwrap()))
