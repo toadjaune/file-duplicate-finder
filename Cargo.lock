@@ -1,4 +1,4 @@
 [[package]]
-name = "duplicate-finder"
+name = "duplicate_finder"
 version = "0.1.0"
 
