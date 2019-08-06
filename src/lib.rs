@@ -1,11 +1,10 @@
-use std::fs;
 use std::collections::HashMap;
-use std::ffi::OsString;
-use std::path::PathBuf;
 use std::error::Error;
+use std::ffi::OsString;
+use std::fs;
+use std::path::PathBuf;
 
-pub fn run(paths: Vec<&str>) -> Result<(), Box <dyn Error>> {
-
+pub fn run(paths: Vec<&str>) -> Result<(), Box<dyn Error>> {
     let mut filenames = FilenameDuplicates::new();
 
     for path in paths {
@@ -18,23 +17,24 @@ pub fn run(paths: Vec<&str>) -> Result<(), Box <dyn Error>> {
 }
 
 pub struct FilenameDuplicates {
-    map: HashMap<OsString, Vec<OsString>>
+    map: HashMap<OsString, Vec<OsString>>,
 }
 
 impl FilenameDuplicates {
-
     fn new() -> FilenameDuplicates {
         FilenameDuplicates {
-            map: HashMap::new()
+            map: HashMap::new(),
         }
     }
 
     fn text_output(&self) {
-        for (filename,filepaths) in &self.map {
-
+        for (filename, filepaths) in &self.map {
             // TODO : Find a way to directly handle OsString without conversion
             // TODO : Also, avoid cloning the string
-            println!("Duplicate files named {} :", filename.clone().into_string().unwrap());
+            println!(
+                "Duplicate files named {} :",
+                filename.clone().into_string().unwrap()
+            );
             for filepath in filepaths {
                 println!("    {}", filepath.clone().into_string().unwrap());
             }
@@ -44,17 +44,16 @@ impl FilenameDuplicates {
     fn remove_single_entries(&mut self) {
         let old_map = std::mem::replace(&mut self.map, HashMap::new());
 
-        self.map = old_map.into_iter()
-            .filter( |entry|
+        self.map = old_map
+            .into_iter()
+            .filter(|entry|
                 // NB : len() is constant-time
-                entry.1.len() > 1
-            ).collect();
+                entry.1.len() > 1)
+            .collect();
     }
-
 }
 
 fn scan_dir(path: PathBuf, duplicates: &mut FilenameDuplicates) -> Result<(), Box<dyn Error>> {
-
     let dir_listing = fs::read_dir(path)?;
 
     for file in dir_listing {
@@ -66,19 +65,15 @@ fn scan_dir(path: PathBuf, duplicates: &mut FilenameDuplicates) -> Result<(), Bo
         // TODO : currently, we consider symlinks as normal files (even if symlinked towards a
         // directory)
         if file.file_type()?.is_dir() {
-
             scan_dir(file.path(), duplicates)?;
-
         } else {
-            let files = duplicates.map.entry(
-                    OsString::from(
-                        file.path().file_name().unwrap()
-                    )
-                ).or_insert(Vec::new());
+            let files = duplicates
+                .map
+                .entry(OsString::from(file.path().file_name().unwrap()))
+                .or_insert(Vec::new());
             // NB : Canonicalize resolves all symlinks in the path
             files.push(OsString::from(file.path().canonicalize()?));
         }
     }
     Ok(())
 }
-
