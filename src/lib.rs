@@ -70,7 +70,7 @@ fn scan_dir(path: PathBuf, duplicates: &mut FilenameDuplicates) -> Result<(), Bo
             let files = duplicates
                 .map
                 .entry(OsString::from(file.path().file_name().unwrap()))
-                .or_insert(Vec::new());
+                .or_insert_with(Vec::new);
             // NB : Canonicalize resolves all symlinks in the path
             files.push(OsString::from(file.path().canonicalize()?));
         }
