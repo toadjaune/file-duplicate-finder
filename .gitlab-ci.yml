@@ -1,6 +1,5 @@
 lint_test:
   image: guangie88/rustfmt-clippy
-  stage: lint
   script:
     # Check style & formatting
     - cargo fmt -- --check
