@@ -1,0 +1,10 @@
+lint_test:
+  image: guangie88/rustfmt-clippy
+  stage: lint
+  script:
+    # Check style & formatting
+    - cargo fmt -- --check
+    # Extra linting
+    - cargo clippy --all-targets --all-features -- -D warnings
+    # Run tests
+    - cargo test
