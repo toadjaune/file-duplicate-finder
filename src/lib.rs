@@ -67,7 +67,7 @@ fn scan_dir(path: PathBuf, duplicates: &mut FilenameDuplicates) -> Result<(), Bo
         // directory)
         if file.file_type()?.is_dir() {
 
-            scan_dir(file.path(), duplicates);
+            scan_dir(file.path(), duplicates)?;
 
         } else {
             let files = duplicates.map.entry(
