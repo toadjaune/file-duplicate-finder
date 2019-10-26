@@ -14,3 +14,7 @@ jobs:
       run: cargo build --verbose
     - name: Run tests
       run: cargo test --verbose
+    - name: Cargo fmt (lint & formatting)
+      run: cargo fmt -- --check
+    - name: Clippy (lint & formatting)
+      run: cargo clippy --all-targets --all-features -- -D warnings
